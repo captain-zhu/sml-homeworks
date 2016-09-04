@@ -22,25 +22,25 @@ fun get_substitutions1(x, y) =
   case x of
       [] => []
     | x'::xs' => case all_except_option(y,x') of
-		     NONE => []@get_substitutions1(xs', y)
+		     NONE => get_substitutions1(xs', y)
 		   | SOME v => v@get_substitutions1(xs', y)
 
 fun get_substitutions2(x,y) =
   let
-      fun aux(a, b, acc) =
+      fun aux(a, acc) =
 	case a of
 	    [] => acc
-	  | a'::as' => case all_except_option(b,a') of
-			   NONE => aux(as', b, acc)
-			 | SOME v => aux(as', b, acc@v)
+	  | a'::as' => case all_except_option(y,a') of
+			   NONE => aux(as', acc)
+			 | SOME v => aux(as', acc@v)
   in
-      aux(x, y, [])
+      aux(x, [])
   end
 
 fun similar_names (x, {first=y, middle=z, last=t}) =
   let
       fun get_name(a) =
-	{first=a, last=z, middle =t}
+	{first=a, last=t, middle =z}
       fun aux (d, acc) =
 	case d of
 	    [] => acc
@@ -126,4 +126,27 @@ fun score (cs, goal) =
   end
 
 fun officiate (cs, ms, goal) =
+  let
+      fun aux(x, y, held_cards) =
+	case y of
+	    [] => score (held_cards, goal) 
+	  | (Discard c)::ys' => aux(x, ys', remove_card( held_cards, c, IllegalMove))
+	  | Draw::ys' => case x of
+			     [] => score (held_cards, goal)
+			   | x'::xs' => let
+			       val new_held_cards = x'::held_cards
+			   in
+			       if sum_cards new_held_cards > goal
+			       then
+				   score (new_held_cards, goal)
+			       else
+				   aux(xs',ys', new_held_cards)
+			   end
+  in
+      aux(cs, ms, [])
+  end
+      
+      
+	   
+	
   
