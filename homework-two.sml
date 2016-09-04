@@ -67,3 +67,63 @@ datatype move = Discard of card | Draw
 exception IllegalMove
 
 (* put your solutions for problem 2 here *)
+fun card_color (suit, rank) =
+  case suit of
+      Spades => Black
+    | Clubs => Black
+    |  _  => Red
+
+fun card_value (suit, rank) =
+  case rank of
+      Num n => n
+    | Ace  => 11
+    | _  => 10
+
+fun remove_card (cs, c, e) =
+  case cs of
+      [] => raise e
+    | c'::cs' => if c = c'
+		 then
+		     cs'
+		 else
+		     c'::remove_card(cs', c, e)
+
+fun all_same_color cs =
+  case cs of
+      [] => true
+    | c::[] => true
+    | c::(c'::cs') => (card_color c = card_color c' andalso all_same_color (c'::cs'))
+
+fun sum_cards cs =
+  let
+      fun aux (xs, acc) =
+	case xs of
+	    [] => acc
+	  | x::xs' => aux(xs', acc + (card_value x))
+  in
+      aux(cs, 0)
+  end
+
+fun score (cs, goal) =
+  let
+      val sum = sum_cards cs
+      val all_same = all_same_color cs
+      val diff = sum - goal
+      val abs_diff = abs diff
+      val compute_divide_num = fn x =>
+			  if x
+			  then
+			      2
+			  else
+			      1
+      val divide_num = compute_divide_num all_same
+  in
+      if diff > 0
+      then
+	  (3 * diff) div divide_num
+      else
+	  abs_diff div divide_num
+  end
+
+fun officiate (cs, ms, goal) =
+  
